@@ -186,12 +186,6 @@ RO Type
 
 ---
 
-## License
-
-This project is released under the MIT License.
-
----
-
 ## Author
 
 Developed using Python and Streamlit for automating bulk PDF renaming based on extracted RO Names.
