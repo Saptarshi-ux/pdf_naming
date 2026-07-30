@@ -5,6 +5,10 @@ import zipfile
 import io
 import pandas as pd
 
+# ------------------------------
+# Page Configuration
+# ------------------------------
+
 st.set_page_config(
     page_title="PDF RO Renamer",
     page_icon="📄",
@@ -14,10 +18,14 @@ st.set_page_config(
 st.title("PDF RO Name Renamer")
 
 st.write(
-    "Upload one or more PDF files. The application will automatically extract the "
-    "Divisional Office and RO Name, rename each PDF, and provide a ZIP download."
+    "Upload one or more PDF files. "
+    "The application extracts the Divisional Office and RO Name, "
+    "renames the PDFs, and provides a ZIP download."
 )
 
+# ------------------------------
+# Upload PDFs
+# ------------------------------
 
 uploaded_files = st.file_uploader(
     "Upload PDF Files",
@@ -25,43 +33,61 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
+# ------------------------------
+# Helper Functions
+# ------------------------------
 
 def sanitize_filename(name):
     """
-    Removes invalid filename characters and replaces spaces with underscores.
+    Remove invalid filename characters.
+    Replace spaces with underscores.
     """
     name = re.sub(r'[\\/*?:"<>|]', "", name)
     name = re.sub(r"\s+", "_", name.strip())
     return name
 
+
 def extract_ro_name(text):
     """
-    Extracts text between:
-    RO Name .... RO Type
+    Extract RO Name.
     """
-    pattern = r"RO Name\s+(.*?)\s+RO Type"
 
-    match = re.search(pattern, text, re.DOTALL)
+    match = re.search(
+        r"RO Name\s+(.*?)\s+RO Type",
+        text,
+        re.DOTALL
+    )
 
     if match:
         return match.group(1).strip()
 
     return None
+
 
 def extract_divisional_office(text):
     """
-    Extracts text between:
-    Divisional Office .... Rating Details
+    Extract the LAST occurrence of Divisional Office.
+
+    Example output:
+    Durgapur DO
+    Kolkata DO
+    Haldia DO
     """
 
-    pattern = r"Divisional Office\s+(.*?)\s+Rating Details"
+    matches = re.findall(
+        r"Divisional Office\s+([A-Za-z ]+DO)",
+        text
+    )
 
-    match = re.search(pattern, text, re.DOTALL)
-
-    if match:
-        return match.group(1).strip()
+    if matches:
+        return matches[-1].strip()
 
     return None
+
+
+# ------------------------------
+# Main Processing
+# ------------------------------
 
 if uploaded_files:
 
@@ -81,7 +107,6 @@ if uploaded_files:
 
         for index, pdf in enumerate(uploaded_files):
 
-            # Read uploaded PDF only once
             pdf_bytes = pdf.read()
 
             doc = fitz.open(
@@ -92,46 +117,51 @@ if uploaded_files:
             text = ""
 
             for page in doc:
-                text += page.get_text()
+                text += page.get_text("text") + "\n"
 
             doc.close()
 
-            ro_name = extract_ro_name(text)
             divisional_office = extract_divisional_office(text)
+            ro_name = extract_ro_name(text)
 
-            if ro_name and divisional_office:
+            if divisional_office and ro_name:
 
                 office = sanitize_filename(divisional_office)
                 ro = sanitize_filename(ro_name)
 
-                new_name = f"{office}_{ro}.pdf"
+                filename = f"{office}_{ro}.pdf"
 
-                # Handle duplicate filenames
-                if new_name in used_names:
-                    used_names[new_name] += 1
+                if filename in used_names:
+                    used_names[filename] += 1
 
-                    new_name = (
-                        f"{office}_{ro}_{used_names[new_name]}.pdf"
+                    filename = (
+                        f"{office}_{ro}_{used_names[filename]}.pdf"
                     )
+
                 else:
-                    used_names[new_name] = 1
+                    used_names[filename] = 1
 
             else:
-                new_name = f"ERROR_{pdf.name}"
+
+                filename = f"ERROR_{pdf.name}"
 
             preview.append(
                 {
                     "Original File": pdf.name,
                     "Divisional Office": divisional_office if divisional_office else "Not Found",
                     "RO Name": ro_name if ro_name else "Not Found",
-                    "Renamed File": new_name
+                    "New File": filename
                 }
             )
 
-            # Add renamed PDF to ZIP
-            zipf.writestr(new_name, pdf_bytes)
+            zipf.writestr(
+                filename,
+                pdf_bytes
+            )
 
-            progress.progress((index + 1) / len(uploaded_files))
+            progress.progress(
+                (index + 1) / len(uploaded_files)
+            )
 
     st.success(
         f"Successfully processed {len(uploaded_files)} PDF file(s)."
@@ -145,7 +175,7 @@ if uploaded_files:
     )
 
     st.download_button(
-        label="Download Renamed PDFs (ZIP)",
+        "Download Renamed PDFs (ZIP)",
         data=zip_buffer.getvalue(),
         file_name="Renamed_PDFs.zip",
         mime="application/zip"
