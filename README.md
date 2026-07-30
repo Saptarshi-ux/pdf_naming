@@ -6,6 +6,15 @@ The application is designed to automate the tedious process of renaming large ba
 
 ---
 
+## Project Highlights
+
+- Developed a production-ready PDF automation tool using Python and Streamlit.
+- Automates the renaming of hundreds of PDF reports within seconds.
+- Eliminates repetitive manual file renaming tasks, reducing human effort and errors.
+- Supports batch PDF uploads and ZIP export for efficient document management.
+- Implements automatic text extraction using PyMuPDF and regular expressions.
+- Designed with a simple, user-friendly web interface for non-technical users.
+
 ## Features
 
 - Upload multiple PDF files simultaneously
