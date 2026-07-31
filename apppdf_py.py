@@ -5,12 +5,12 @@ import zipfile
 import io
 import pandas as pd
 
-# ------------------------------
-# Page Configuration
-# ------------------------------
+# -------------------------------------------------
+# PAGE CONFIG
+# -------------------------------------------------
 
 st.set_page_config(
-    page_title="PDF RO Renamer",
+    page_title="PDF RO Name Renamer",
     page_icon="📄",
     layout="wide"
 )
@@ -23,39 +23,41 @@ st.write(
     "renames the PDFs, and provides a ZIP download."
 )
 
-# ------------------------------
-# Upload PDFs
-# ------------------------------
+# -------------------------------------------------
+# FILE UPLOAD
+# -------------------------------------------------
 
 uploaded_files = st.file_uploader(
     "Upload PDF Files",
-    type="pdf",
+    type=["pdf"],
     accept_multiple_files=True
 )
 
-# ------------------------------
-# Helper Functions
-# ------------------------------
+# -------------------------------------------------
+# HELPER FUNCTIONS
+# -------------------------------------------------
 
 def sanitize_filename(name):
     """
-    Remove invalid filename characters.
-    Replace spaces with underscores.
+    Removes invalid filename characters and replaces spaces with underscores.
     """
+
     name = re.sub(r'[\\/*?:"<>|]', "", name)
     name = re.sub(r"\s+", "_", name.strip())
+
     return name
 
 
 def extract_ro_name(text):
     """
-    Extract RO Name.
+    Extract RO Name between
+    RO Name .... RO Type
     """
 
     match = re.search(
-        r"RO Name\s+(.*?)\s+RO Type",
+        r"RO Name\s*(.*?)\s*RO Type",
         text,
-        re.DOTALL
+        flags=re.DOTALL | re.IGNORECASE
     )
 
     if match:
@@ -68,15 +70,17 @@ def extract_divisional_office(text):
     """
     Extract the LAST occurrence of Divisional Office.
 
-    Example output:
+    Examples:
+
     Durgapur DO
     Kolkata DO
     Haldia DO
     """
 
     matches = re.findall(
-        r"Divisional Office\s+([A-Za-z ]+DO)",
-        text
+        r"Divisional Office\s+(.+?DO)",
+        text,
+        flags=re.IGNORECASE
     )
 
     if matches:
@@ -85,95 +89,162 @@ def extract_divisional_office(text):
     return None
 
 
-# ------------------------------
-# Main Processing
-# ------------------------------
+# -------------------------------------------------
+# MAIN PROCESS
+# -------------------------------------------------
 
 if uploaded_files:
-
-    zip_buffer = io.BytesIO()
 
     preview = []
 
     used_names = {}
 
-    progress = st.progress(0)
+    success_count = 0
+
+    failed_count = 0
+
+    zip_buffer = io.BytesIO()
+
+    progress = st.progress(
+        0,
+        text="Starting..."
+    )
 
     with zipfile.ZipFile(
         zip_buffer,
-        "w",
+        mode="w",
         compression=zipfile.ZIP_DEFLATED
     ) as zipf:
 
         for index, pdf in enumerate(uploaded_files):
 
-            pdf_bytes = pdf.read()
+            try:
 
-            doc = fitz.open(
-                stream=pdf_bytes,
-                filetype="pdf"
-            )
+                progress.progress(
+                    (index + 1) / len(uploaded_files),
+                    text=f"Processing {index + 1} of {len(uploaded_files)}..."
+                )
 
-            text = ""
+                pdf_bytes = pdf.getvalue()
 
-            for page in doc:
-                text += page.get_text("text") + "\n"
+                doc = None
 
-            doc.close()
+                try:
 
-            divisional_office = extract_divisional_office(text)
-            ro_name = extract_ro_name(text)
-
-            if divisional_office and ro_name:
-
-                office = sanitize_filename(divisional_office)
-                ro = sanitize_filename(ro_name)
-
-                filename = f"{office}_{ro}.pdf"
-
-                if filename in used_names:
-                    used_names[filename] += 1
-
-                    filename = (
-                        f"{office}_{ro}_{used_names[filename]}.pdf"
+                    doc = fitz.open(
+                        stream=pdf_bytes,
+                        filetype="pdf"
                     )
 
+                    text = "\n".join(
+                        page.get_text("text")
+                        for page in doc
+                    )
+
+                finally:
+
+                    if doc is not None:
+                        doc.close()
+
+                divisional_office = extract_divisional_office(text)
+
+                ro_name = extract_ro_name(text)
+
+                if divisional_office and ro_name:
+
+                    office = sanitize_filename(divisional_office)
+
+                    ro = sanitize_filename(ro_name)
+
+                    filename = f"{office}_{ro}.pdf"
+
+                    if filename in used_names:
+
+                        used_names[filename] += 1
+
+                        filename = (
+                            f"{office}_{ro}_{used_names[filename]}.pdf"
+                        )
+
+                    else:
+
+                        used_names[filename] = 1
+
+                    success_count += 1
+
+                    error_message = ""
+
                 else:
-                    used_names[filename] = 1
 
-            else:
+                    filename = f"ERROR_{pdf.name}"
 
-                filename = f"ERROR_{pdf.name}"
+                    failed_count += 1
 
-            preview.append(
-                {
-                    "Original File": pdf.name,
-                    "Divisional Office": divisional_office if divisional_office else "Not Found",
-                    "RO Name": ro_name if ro_name else "Not Found",
-                    "New File": filename
-                }
-            )
+                    error_message = (
+                        "Divisional Office or RO Name not found."
+                    )
 
-            zipf.writestr(
-                filename,
-                pdf_bytes
-            )
+                preview.append(
 
-            progress.progress(
-                (index + 1) / len(uploaded_files)
-            )
+                    {
+                        "Original File": pdf.name,
+                        "Divisional Office": divisional_office if divisional_office else "Not Found",
+                        "RO Name": ro_name if ro_name else "Not Found",
+                        "New File": filename,
+                        "Status": "Success" if error_message == "" else "Failed",
+                        "Error": error_message
+                    }
+
+                )
+
+                zipf.writestr(
+                    filename,
+                    pdf_bytes
+                )
+
+            except Exception as e:
+
+                failed_count += 1
+
+                preview.append(
+
+                    {
+                        "Original File": pdf.name,
+                        "Divisional Office": "Error",
+                        "RO Name": "Error",
+                        "New File": "Not Processed",
+                        "Status": "Failed",
+                        "Error": str(e)
+                    }
+
+                )
+
+                continue
+
+    progress.empty()
+
+    zip_buffer.seek(0)
 
     st.success(
-        f"Successfully processed {len(uploaded_files)} PDF file(s)."
+        f"""
+Processed Successfully : {success_count}
+
+Failed : {failed_count}
+"""
     )
 
     st.subheader("Preview")
 
-    st.dataframe(df, width="stretch")
+    df = pd.DataFrame(preview)
+
+    st.dataframe(
+        df,
+        width="stretch"
+    )
 
     st.download_button(
-        "Download Renamed PDFs (ZIP)",
-        data=zip_buffer.getvalue(),
+        label="Download Renamed PDFs (ZIP)",
+        data=zip_buffer,
         file_name="Renamed_PDFs.zip",
         mime="application/zip"
     )
