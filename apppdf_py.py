@@ -169,10 +169,7 @@ if uploaded_files:
 
     st.subheader("Preview")
 
-    st.dataframe(
-        pd.DataFrame(preview),
-        use_container_width=True
-    )
+    st.dataframe(df, width="stretch")
 
     st.download_button(
         "Download Renamed PDFs (ZIP)",
