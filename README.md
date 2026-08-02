@@ -1,51 +1,114 @@
 # PDF RO Name Renamer
 
-A Streamlit-based web application that automatically extracts specific information from PDF files and renames them according to a predefined naming convention.
+A Python and Streamlit-based web application that automates the renaming of PDF files by extracting specific information directly from the document.
 
-The application is designed to automate the tedious process of renaming large batches of PDF reports, significantly reducing manual effort and minimizing human error.
+The application reads each uploaded PDF, extracts the **Divisional Office** and **RO Name**, renames the PDF according to a predefined naming convention, and provides all renamed files as a downloadable ZIP archive.
 
 ---
 
 ## Project Highlights
 
-- Developed a production-ready PDF automation tool using Python and Streamlit.
-- Automates the renaming of hundreds of PDF reports within seconds.
-- Eliminates repetitive manual file renaming tasks, reducing human effort and errors.
-- Supports batch PDF uploads and ZIP export for efficient document management.
-- Implements automatic text extraction using PyMuPDF and regular expressions.
-- Designed with a simple, user-friendly web interface for non-technical users.
+- Developed a production-ready PDF automation tool using **Python** and **Streamlit**.
+- Automates bulk PDF renaming by extracting information directly from PDF documents.
+- Eliminates repetitive manual file renaming, significantly reducing processing time and human error.
+- Supports batch processing of multiple PDF files in a single upload.
+- Automatically creates a ZIP archive containing all renamed PDFs.
+- Includes duplicate filename handling, robust error handling, and processing status reporting.
+- Designed with an intuitive web interface for non-technical users.
+
+---
 
 ## Features
 
-- Upload multiple PDF files simultaneously
+- Upload multiple PDF files simultaneously.
 - Automatically extract:
   - Divisional Office
   - RO Name
-- Rename PDFs using the following format:
+- Rename files using the format:
 
 ```
-<Divisional_Office>_<RO_Name>.pdf
+DivisionalOffice_ROName.pdf
 ```
 
-### Example
-
-Input:
-
-```
-report_68515.pdf
-```
-
-Extracted Data:
-
-```
-Divisional Office : Durgapur DO
-RO Name           : M/S JAYSWAL AUTO SERVICE
-```
-
-Output:
+Example:
 
 ```
 Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf
+```
+
+- Automatic filename sanitization.
+- Duplicate filename detection and handling.
+- Preview table showing:
+  - Original Filename
+  - Divisional Office
+  - RO Name
+  - New Filename
+  - Processing Status
+  - Error Message (if any)
+- Download all renamed PDFs as a single ZIP archive.
+- Gracefully handles invalid or unsupported PDF files without stopping the entire process.
+
+---
+
+## Tech Stack
+
+- Python 3
+- Streamlit
+- PyMuPDF (fitz)
+- Pandas
+- Regular Expressions (re)
+- ZipFile
+- BytesIO
+
+---
+
+## Project Structure
+
+```
+PDF_RO_Name_Renamer/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+└── sample_pdfs/
+```
+
+---
+
+## Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/your-username/pdf-ro-name-renamer.git
+```
+
+Navigate to the project directory
+
+```bash
+cd pdf-ro-name-renamer
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the application
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Requirements
+
+```
+streamlit==1.49.1
+PyMuPDF==1.26.4
+pandas==2.3.2
 ```
 
 ---
@@ -53,153 +116,97 @@ Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf
 ## How It Works
 
 1. Upload one or more PDF files.
-2. The application reads the text from each PDF.
-3. It extracts:
+2. The application extracts the text from every uploaded PDF.
+3. It identifies:
    - Divisional Office
    - RO Name
-4. The extracted values are sanitized to create valid filenames.
-5. Every PDF is renamed automatically.
+4. The filename is generated using the format:
+
+```
+DivisionalOffice_ROName.pdf
+```
+
+5. A preview table is displayed showing the extracted information.
 6. All renamed PDFs are packaged into a ZIP archive.
-7. Download the ZIP with a single click.
+7. Download the ZIP file with a single click.
 
 ---
 
-## Preview
+## Example
 
-The application displays a preview table before downloading.
-
-| Original File | Divisional Office | RO Name | New File |
-|---------------|-------------------|---------|----------|
-| report_68515.pdf | Durgapur DO | M/S JAYSWAL AUTO SERVICE | Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf |
-
----
-
-## Technologies Used
-
-- Python
-- Streamlit
-- PyMuPDF (fitz)
-- pandas
-- Regular Expressions (Regex)
-- zipfile
-- io
-
----
-
-## Project Structure
+Original files
 
 ```
-.
-├── app.py
-├── requirements.txt
-└── README.md
+report_68515.pdf
+report_68571.pdf
+report_68632.pdf
 ```
 
----
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/your-username/pdf-ro-name-renamer.git
-cd pdf-ro-name-renamer
-```
-
-Install the required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Running the Application
-
-```bash
-streamlit run app.py
-```
-
-The application will automatically open in your default web browser.
-
----
-
-## Dependencies
+Renamed files
 
 ```
-streamlit
-PyMuPDF
-pandas
-```
+Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf
 
----
-
-## Supported PDF Format
-
-The application expects PDF files containing text-based content where the following information is available:
-
-- Divisional Office
-- RO Name
-
-These values are extracted automatically and used to generate the output filename.
-
----
-
-## Output Format
-
-The generated filename follows the convention:
-
-```
-<Divisional_Office>_<RO_Name>.pdf
-```
-
-Example:
-
-```
 Kolkata_DO_M_S_TRINATH_SERVICE_STATION_(I-548).pdf
+
+Kolkata_DO_M_S_MAYA_FUELS_&_SERVICES_COMPANY.pdf
 ```
 
 ---
 
 ## Error Handling
 
-If the required information cannot be extracted from a PDF, the application labels it as:
+The application includes robust error handling to ensure uninterrupted processing.
 
-```
-ERROR_<original_filename>.pdf
-```
-
-This makes it easy to identify files that require manual review.
-
----
-
-## Key Highlights
-
-- Batch processing of multiple PDF files
-- Automatic metadata extraction
-- Intelligent filename sanitization
-- Duplicate filename handling
-- ZIP archive generation
-- Progress bar for processing status
-- Preview table before download
-- User-friendly web interface
+- Invalid or corrupted PDF files are skipped.
+- Processing continues even if one or more files fail.
+- Missing Divisional Office or RO Name fields are reported.
+- Duplicate filenames are automatically resolved.
+- A detailed processing status is displayed for every uploaded file.
 
 ---
 
-## Future Enhancements
+## Performance
 
+The application is optimized for bulk processing and supports uploading multiple PDF files in a single batch.
+
+Features include:
+
+- Batch PDF processing
+- Memory-efficient PDF handling
+- Automatic ZIP generation
+- Progress indicator
+- Duplicate filename management
+- Preview before download
+
+---
+
+## Future Improvements
+
+Potential enhancements include:
+
+- Drag-and-drop folder support
 - OCR support for scanned PDFs
-- Folder upload support
-- Excel report containing original and renamed filenames
-- Custom naming pattern configuration
-- Search and filtering in preview table
-- Desktop executable (.exe) version
-- Cloud deployment support
+- Excel report export
+- Custom filename templates
+- Advanced search and filtering
+- Docker deployment
+- User authentication
+- Cloud storage integration
+
+---
+
+## License
+
+This project is intended for educational and document automation purposes.
 
 ---
 
 ## Author
 
-Developed by **Saptarshi Bandyopadhyay**
+**Saptarshi Bandyopadhyay**
 
-Python | Streamlit | Data Analytics | Automation
+Machine Learning Specialist | Data Analyst | Python Developer
+
+GitHub: [https://github.com/your-username](https://github.com/Saptarshi-ux)
+LinkedIn: [https://linkedin.com/in/your-profile](https://www.linkedin.com/in/saptarshi-sb1729/)
