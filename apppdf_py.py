@@ -5,9 +5,6 @@ import zipfile
 import io
 import pandas as pd
 
-# -------------------------------------------------
-# PAGE CONFIG
-# -------------------------------------------------
 
 st.set_page_config(
     page_title="PDF RO Name Renamer",
@@ -23,9 +20,6 @@ st.write(
     "renames the PDFs, and provides a ZIP download."
 )
 
-# -------------------------------------------------
-# FILE UPLOAD
-# -------------------------------------------------
 
 uploaded_files = st.file_uploader(
     "Upload PDF Files",
@@ -33,9 +27,6 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-# -------------------------------------------------
-# HELPER FUNCTIONS
-# -------------------------------------------------
 
 def sanitize_filename(name):
     """
@@ -88,10 +79,6 @@ def extract_divisional_office(text):
 
     return None
 
-
-# -------------------------------------------------
-# MAIN PROCESS
-# -------------------------------------------------
 
 if uploaded_files:
 
