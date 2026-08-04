@@ -193,6 +193,7 @@ Potential enhancements include:
 - Docker deployment
 - User authentication
 - Cloud storage integration
+- Translating draft into anotehr language
 
 ---
 
