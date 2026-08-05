@@ -147,7 +147,7 @@ Renamed files
 ```
 Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf
 
-Kolkata_DO_M_S_TRINATH_SERVICE_STATION_(I-548).pdf
+Kolkata_DO_M_S_TRINATH_SERVICE_STATION.pdf
 
 Kolkata_DO_M_S_MAYA_FUELS_&_SERVICES_COMPANY.pdf
 ```
