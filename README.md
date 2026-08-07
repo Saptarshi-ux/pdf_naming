@@ -139,7 +139,6 @@ Original files
 ```
 report_68515.pdf
 report_68571.pdf
-report_68632.pdf
 ```
 
 Renamed files
@@ -148,8 +147,6 @@ Renamed files
 Durgapur_DO_M_S_JAYSWAL_AUTO_SERVICE.pdf
 
 Kolkata_DO_M_S_TRINATH_SERVICE_STATION.pdf
-
-Kolkata_DO_M_S_MAYA_FUELS_&_SERVICES_COMPANY.pdf
 ```
 
 ---
